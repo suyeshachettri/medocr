@@ -16,6 +16,7 @@ AI model that reads messy doctor handwriting using fine-tuned TrOCR + FastAPI.
 - **Training:** PyTorch on Google Colab T4 GPU
 
 ## Project Structure
+```
 medocr/
 ├── app.py                       # FastAPI application
 ├── test_api.py                  # API test script
@@ -24,7 +25,8 @@ medocr/
 │   └── 02_train_trocr.ipynb     # Model training
 ├── models/trocr-medical/        # Trained model config
 └── data/
-└── labels_final.csv         # Dataset labels
+    └── labels_final.csv         # Dataset labels
+```
 
 ## Setup
 ```bash
