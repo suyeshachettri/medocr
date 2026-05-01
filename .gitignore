@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.zip
+
+# Data
+data/iam/
+data/gnhk/
+data/synthetic/
+data/*.png
+data/labels_iam.csv
+data/labels_synthetic.csv
+data/sample_check.png
+
+# Model weights
+models/trocr-medical/*.safetensors
+models/trocr-medical/*.bin
+
+# Misc
+.ipynb_checkpoints/
+fonts/
