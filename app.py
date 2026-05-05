@@ -1,9 +1,9 @@
-import os
+import os, io, gc
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from PIL import Image
-import torch, io
+import torch
 
 app = FastAPI(
     title="MedOCR API",
@@ -18,13 +18,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Loads locally in VS Code, downloads from HuggingFace on server
 MODEL_DIR = os.environ.get("MODEL_DIR", "suyeshachettri/medocr-trocr")
 
 print(f"Loading model from: {MODEL_DIR}")
+
+# Load with memory optimizations
 processor = TrOCRProcessor.from_pretrained(MODEL_DIR)
-model     = VisionEncoderDecoderModel.from_pretrained(MODEL_DIR)
+model     = VisionEncoderDecoderModel.from_pretrained(
+    MODEL_DIR,
+    torch_dtype=torch.float16,   # half precision — cuts memory in half
+    low_cpu_mem_usage=True       # loads layer by layer
+)
 model.eval()
+gc.collect()
+
 print("✅ Model ready!")
 
 def predict(image: Image.Image) -> str:
@@ -42,6 +49,7 @@ async def predict_handwriting(file: UploadFile = File(...)):
     contents       = await file.read()
     image          = Image.open(io.BytesIO(contents)).convert("RGB")
     predicted_text = predict(image)
+    gc.collect()
     return {
         "predicted_text": predicted_text,
         "filename":       file.filename,
