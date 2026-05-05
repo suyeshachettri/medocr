@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
@@ -17,9 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load model on startup
-print("Loading model...")
-MODEL_DIR = "./models/trocr-medical"
+# Loads locally in VS Code, downloads from HuggingFace on server
+MODEL_DIR = os.environ.get("MODEL_DIR", "suyeshachettri/medocr-trocr")
+
+print(f"Loading model from: {MODEL_DIR}")
 processor = TrOCRProcessor.from_pretrained(MODEL_DIR)
 model     = VisionEncoderDecoderModel.from_pretrained(MODEL_DIR)
 model.eval()
@@ -37,13 +39,9 @@ def root():
 
 @app.post("/predict")
 async def predict_handwriting(file: UploadFile = File(...)):
-    # Read uploaded image
-    contents = await file.read()
-    image    = Image.open(io.BytesIO(contents)).convert("RGB")
-    
-    # Get prediction
+    contents       = await file.read()
+    image          = Image.open(io.BytesIO(contents)).convert("RGB")
     predicted_text = predict(image)
-    
     return {
         "predicted_text": predicted_text,
         "filename":       file.filename,
